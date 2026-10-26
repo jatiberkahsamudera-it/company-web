@@ -1,0 +1,43 @@
+name: PHP checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: PHP lint and homepage smoke test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+
+      - name: Lint PHP files
+        run: find . -type f -name '*.php' -not -path './.git/*' -print0 | xargs -0 -n1 php -l
+
+      - name: Smoke-test homepage
+        run: |
+          php -S 127.0.0.1:8080 -t . > /tmp/company-web-php-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+
+          for attempt in $(seq 1 20); do
+            if curl --fail --silent http://127.0.0.1:8080/ -o /tmp/company-web-homepage.html; then
+              break
+            fi
+            sleep 1
+          done
+
+          test -s /tmp/company-web-homepage.html
+          grep -q 'Your headline' /tmp/company-web-homepage.html
+          grep -q 'homeCarousel' /tmp/company-web-homepage.html
+          curl --fail --silent http://127.0.0.1:8080/css/style.css | grep -q 'hero-section'

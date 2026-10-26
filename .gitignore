@@ -1,0 +1,21 @@
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Uploaded files are runtime data, not source assets
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# PHP / Composer
+/vendor/
+*.log
+
+# JavaScript tooling, if added later
+/node_modules/
+
+# Editor and operating-system files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
