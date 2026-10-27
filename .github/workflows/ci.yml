@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   test:
-    name: PHP lint and homepage smoke test
+    name: PHP lint and template smoke test
     runs-on: ubuntu-latest
 
     steps:
@@ -26,7 +26,7 @@ jobs:
 
       - name: Smoke-test homepage
         run: |
-          php -S 127.0.0.1:8080 -t . > /tmp/company-web-php-server.log 2>&1 &
+          php -S 127.0.0.1:8080 -t public > /tmp/company-web-php-server.log 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
 
@@ -39,5 +39,17 @@ jobs:
 
           test -s /tmp/company-web-homepage.html
           grep -q 'Your headline' /tmp/company-web-homepage.html
-          grep -q 'homeCarousel' /tmp/company-web-homepage.html
-          curl --fail --silent http://127.0.0.1:8080/css/style.css | grep -q 'hero-section'
+          grep -q 'id="services"' /tmp/company-web-homepage.html
+          ! grep -q 'homeCarousel' /tmp/company-web-homepage.html
+          curl --fail --silent http://127.0.0.1:8080/assets/css/style.css | grep -q 'hero-section'
+
+          curl --fail --silent --cookie-jar /tmp/company-web-cookies.txt \
+            'http://127.0.0.1:8080/?lang=id' -o /tmp/company-web-homepage-id.html
+          grep -q '<html lang="id">' /tmp/company-web-homepage-id.html
+          grep -q 'Judul utama Anda ada di sini.' /tmp/company-web-homepage-id.html
+          curl --fail --silent --cookie /tmp/company-web-cookies.txt \
+            http://127.0.0.1:8080/ -o /tmp/company-web-homepage-id-again.html
+          grep -q 'Layanan kami' /tmp/company-web-homepage-id-again.html
+
+      - name: Run template smoke test
+        run: php tests/smoke.php

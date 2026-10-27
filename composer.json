@@ -1,0 +1,12 @@
+{
+    "name": "company/profile-template",
+    "description": "A reusable native PHP company profile website starter",
+    "type": "project",
+    "require": {
+        "php": ">=8.1"
+    },
+    "scripts": {
+        "test": "php tests/smoke.php",
+        "lint": "find . -type f -name '*.php' -not -path './vendor/*' -not -path './.git/*' -print0 | xargs -0 -n1 php -l"
+    }
+}
